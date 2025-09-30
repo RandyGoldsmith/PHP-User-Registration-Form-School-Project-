@@ -99,53 +99,116 @@
             color: #10b981;
             margin-top: 0;
         }
+
+        .error {
+            color: red;
+        }
 </style>
 </head>
 
 <body>
     
+<?php
+
+    $userErr = $emailErr = $passwordErr = $confirm_passwordErr = "";
+    $form_is_valid = true;
+    $output_message = "";
+    
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    function test_input(string $data) {
+        $data = htmlspecialchars($data);
+        $data = trim($data);
+        return $data;
+    }
+    
+    $username = test_input( $_POST["username"]);
+    $email = test_input( $_POST["email"]);
+    $password = test_input($_POST["password"]);
+    $confirm_password = test_input($_POST["confirm_password"]);
+
+    if(empty($username)) {
+        $userErr = "Please enter a username";
+        $form_is_valid = false;
+    }
+
+    if(empty($email)) {
+        $emailErr = "Please enter an email address";
+        $form_is_valid = false;
+    }
+
+    if(empty($password)) {
+        $passwordErr = "Please enter a password";
+        $form_is_valid = false;
+    }
+
+    if(empty($confirm_password)) {
+        $confirm_passwordErr = "Please confirm your password";
+        $form_is_valid = false;
+    }
+
+
+
+    if($password !== $confirm_password) {
+        $passwordErr = "Passwords do not match";
+        $confirm_passwordErr = "Passwords do not match";
+        $form_is_valid = false;
+    }
+
+    if($form_is_valid) {
+        $output_message = "<div class='output'>
+    <h3>Registration Successful!</h3>
+    <p>$username</p>
+    <p>$email</p>
+    <p>$password</p>
+    <p>$confirm_password</p>
+    </div>";
+    
+    }
+
+}
+    ?>
+
 <div class="form-wrapper">
     <h2 class="form-header">User Registration</h2>
     <form action="" method="POST" class="form-container">
         <div class="form-field">
             <label class="form-label" for="username">Username</label>
             <input type="text" class="form-input" id="username" name="username"/>
+            <?php if(!empty($userErr)): ?>
+            <span class="error"><?php echo $userErr; ?></span>
+            <?php endif; ?>
         </div>
         <div class="form-field">
             <label class="form-label" for="email">Email Address</label>
             <input type="text" class="form-input" id="email" name="email"/>
+            <?php if(!empty($emailErr)): ?>
+            <span class="error"><?php echo $emailErr; ?></span>
+            <?php endif; ?>
         </div>
         <div class="form-field">
             <label class="form-label" for="password">Password</label>
             <input type="password" class="form-input" id="password" name="password"/>
+            <?php if(!empty($passwordErr)): ?>
+            <span class="error"><?php echo $passwordErr; ?></span>
+            <?php endif; ?>
         </div>
         <div class="form-field">
             <label class="form-label" for="confirm_password">Confirm Password</label>
             <input type="password" class="form-input" id="confirm_password" name="confirm_password"/>
+            <?php if(!empty($confirm_passwordErr)): ?>
+            <span class="error"><?php echo $confirm_passwordErr; ?></span>
+            <?php endif; ?>
         </div>
         <button type="submit" class="form-button">Submit</button>
     </form>
 </div>
 
-    <?php
     
-    if($_SERVER["REQUEST_METHOD"] == "POST") {
+<?php echo $output_message; ?>
     
-    $username = htmlspecialchars($_POST["username"]);
-    $email = htmlspecialchars($_POST["email"]);
-    $password = htmlspecialchars($_POST["password"]);
-    $confirm_password = htmlspecialchars($_POST["confirm_password"]);
 
-    echo "<div class='output'>";
-    echo "<h3>Form Data</h3>";
-    echo "$username <br>";
-    echo "$email <br>";
-    echo "$password <br>";
-    echo "$confirm_password <br>";
-    echo "</div>";
-    }
-
-    ?>
+    
 </body>
 </html>
 
