@@ -111,7 +111,7 @@
 <?php
 
     $userErr = $emailErr = $passwordErr = $confirm_passwordErr = "";
-    $form_is_valid = true;
+    $username = $email = $password = $confirm_password = "";
     $output_message = "";
     
     if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -121,6 +121,21 @@
         $data = trim($data);
         return $data;
     }
+
+    function validatePassword(string $password): ?string {
+        if(strlen($password) < 8) {
+            return "Password must be at least 8 characters long.";
+        }
+
+        if(!preg_match("/[0-9]/", $password)) {
+            return "Password must contain at least one number.";
+        }
+
+        if(!preg_match("/[^a-zA-Z0-9\s]/", $password)) {
+            return "Password must contain at least one special character (e.g., @, #, $).";
+        }
+        return null;
+    }
     
     $username = test_input( $_POST["username"]);
     $email = test_input( $_POST["email"]);
@@ -129,31 +144,34 @@
 
     if(empty($username)) {
         $userErr = "Please enter a username";
-        $form_is_valid = false;
+        
+    } elseif(!preg_match("/^[a-zA-Z-' ]*$/", $username)) {
+        $userErr = "Only letters and white spaces allowed";
     }
 
     if(empty($email)) {
         $emailErr = "Please enter an email address";
-        $form_is_valid = false;
+      
+    } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $emailErr = "Pleae enter a valid email address in form 'example@gmail.com'";
+       
     }
 
     if(empty($password)) {
-        $passwordErr = "Please enter a password";
-        $form_is_valid = false;
-    }
+            $passwordErr = "Please enter a password";
+     } else {
+            $passwordErr = validatePassword($password);
+        }
+    
 
     if(empty($confirm_password)) {
         $confirm_passwordErr = "Please confirm your password";
-        $form_is_valid = false;
-    }
-
-
-
-    if($password !== $confirm_password) {
+    } elseif($password !== $confirm_password) {
         $passwordErr = "Passwords do not match";
-        $confirm_passwordErr = "Passwords do not match";
-        $form_is_valid = false;
+        $confirm_password = "Passwords do not match";
     }
+
+    $form_is_valid = empty($userErr) && empty($emailErr) && empty($passwordErr) && empty($confirm_password);
 
     if($form_is_valid) {
         $output_message = "<div class='output'>
@@ -163,6 +181,8 @@
     <p>$password</p>
     <p>$confirm_password</p>
     </div>";
+
+    $username = $email = $password = $confirm_password = "";
     
     }
 
@@ -171,7 +191,7 @@
 
 <div class="form-wrapper">
     <h2 class="form-header">User Registration</h2>
-    <form action="" method="POST" class="form-container">
+    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?></form>)" method="POST" class="form-container">
         <div class="form-field">
             <label class="form-label" for="username">Username</label>
             <input type="text" class="form-input" id="username" name="username"/>
